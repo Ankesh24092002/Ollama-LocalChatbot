@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(to right, #ece9e6, #ffffff);
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            overflow: hidden;
+        }
+        header {
+            padding: 20px;
+            background: #3f51b5;
+            color: white;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+        }
+        .response-box {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+            word-wrap: break-word;
+        }
+        form {
+            display: flex;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px 0 0 8px;
+            font-size: 1em;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #3f51b5;
+            color: white;
+            cursor: pointer;
+            border-radius: 0 8px 8px 0;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #303f9f;
+        }
+        .response-box p {
+            margin: 5px 0;
+            padding: 10px;
+            max-width: 70%;
+            word-break: break-word;
+            border-radius: 15px;
+            display: block;
+            clear: both; /* Ensure new messages appear below */
+        }
+        .response-box .user-response {
+            background-color: #d1ecf1;
+            border-radius: 15px 15px 0 15px;
+            align-self: flex-end;
+            text-align: right;
+            float: right;
+            clear: both; /* Ensure new messages appear below */
+        }
+        .response-box .bot-response {
+            background-color: #c8e6c9;
+            border-radius: 15px 15px 15px 0;
+            align-self: flex-start;
+            text-align: left;
+            float: left;
+            clear: both; /* Ensure new messages appear below */
+        }
+        .loading-dots {
+            display: inline-flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #c8e6c9;
+            border-radius: 15px;
+            float: left;
+            clear: both;
+        }
+        .loading-dots span {
+            display: inline-block;
+            margin: 0 2px;
+            width: 8px;
+            height: 8px;
+            background-color: #3f51b5;
+            border-radius: 50%;
+            animation: bounce 0.6s infinite alternate;
+        }
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes bounce {
+            to {
+                opacity: 0.3;
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            Chat Interface
+        </header>
+        <main>
+            <div class="response-box" id="response-box"></div>
+            <form id="prompt-form">
+                <input type="text" id="prompt" name="prompt" placeholder="Enter your prompt" required>
+                <button type="submit">Send</button>
+            </form>
+        </main>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#prompt-form').on('submit', function(event) {
+                event.preventDefault();
+                let prompt = $('#prompt').val();
+
+                // Append the user's prompt to the response box
+                $('#response-box').append('<p class="user-response"><strong>You:</strong> ' + prompt + '</p>');
+                $('#response-box').scrollTop($('#response-box')[0].scrollHeight);
+
+                // Remove any existing loading dots
+                $('#response-box .loading-dots').remove();
+
+                // Show loading dots in the response box
+                let loadingDots = $('<div class="loading-dots"><span></span><span></span><span></span></div>');
+                $('#response-box').append(loadingDots);
+                $('#response-box').scrollTop($('#response-box')[0].scrollHeight);
+
+                $.ajax({
+                    url: '/',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        // Remove the loading dots
+                        loadingDots.remove();
+
+                        // Append the bot's response to the response box
+                        $('#response-box').append('<p class="bot-response"><strong>Bot:</strong> ' + response.response + '</p>');
+                        $('#response-box').scrollTop($('#response-box')[0].scrollHeight);
+
+                        // Clear the input field
+                        $('#prompt').val('');
+                    },
+                    error: function() {
+                        // Remove the loading dots
+                        loadingDots.remove();
+
+                        // Append an error message to the response box
+                        $('#response-box').append('<p class="bot-response"><strong>Bot:</strong> Error generating response.</p>');
+                        $('#response-box').scrollTop($('#response-box')[0].scrollHeight);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

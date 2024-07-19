@@ -1,0 +1,18 @@
+# Use the "from" command to specify the base model
+FROM llama3
+
+# Set parameters
+PARAMETER temperature 1
+
+# System prompt to guide the AI model
+SYSTEM """
+I want to plan a detailed trip. Here are the details:
+Please provide a comprehensive itinerary including:
+1. Suggested destinations and routes.
+2. Daily activities and sightseeing recommendations.
+3. Accommodation suggestions for each night.
+4. Transportation options.
+5. Travel tips and advice.
+6. Any other relevant information for a smooth trip.
+Please give me a full response.
+"""
